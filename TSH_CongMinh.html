@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân Tích Thần Số Học - Đỗ Công Minh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: Ứng dụng được thiết kế theo một luồng tự sự, dẫn dắt người dùng từ tổng quan đến chi tiết. Bắt đầu với Con số Chủ đạo nổi bật, sau đó là các chỉ số cốt lõi được trình bày dưới dạng thẻ tương tác để tránh gây ngợp. Tiếp theo là biểu đồ và các mũi tên sức mạnh được trực quan hóa. Dòng thời gian cuộc đời cho phép khám phá từng giai đoạn. Cuối cùng là phần tổng hợp lời khuyên. Cấu trúc này giúp thông tin phức tạp trở nên dễ tiếp nhận, khuyến khích sự tương tác và khám phá thay vì chỉ đọc một cách thụ động. -->
+    <!-- Visualization & Content Choices: 1. Con số Chủ đạo: Văn bản lớn, làm điểm nhấn. 2. Các chỉ số cốt lõi: Dạng thẻ (card) tương tác, nhấp để xem chi tiết, giúp tổ chức thông tin gọn gàng. 3. Biểu đồ Thần số học: Lưới HTML/CSS để trực quan hóa, dễ hiểu hơn văn bản. 4. Các chặng đường đời: Dòng thời gian (timeline) tương tác bằng HTML/CSS/JS, giúp hình dung rõ các giai đoạn. 5. Phân bổ Năng lượng: Biểu đồ cột từ Chart.js để so sánh tần suất xuất hiện của các con số, cung cấp cái nhìn tổng thể về các nguồn năng lượng. Các lựa chọn này ưu tiên sự tương tác và trực quan hóa để làm cho báo cáo trở nên sinh động và dễ hiểu. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fdfcfb;
+            color: #4a4a4a;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #d97706;
+            border-bottom-color: #d97706;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .numerology-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 240px;
+            height: 240px;
+            border: 2px solid #a8a29e;
+        }
+        .numerology-grid .grid-cell {
+            border: 1px solid #d6d3d1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            position: relative;
+        }
+        .numerology-grid .grid-cell span {
+            z-index: 2;
+        }
+        .arrow {
+            position: absolute;
+            background-color: rgba(251, 191, 36, 0.3);
+            z-index: 1;
+        }
+        .arrow-147 { top: 0; left: 33.33%; width: 33.33%; height: 100%; }
+        .arrow-258 { top: 33.33%; left: 0; width: 100%; height: 33.33%; }
+        .arrow-369 { top: 66.66%; left: 0; width: 100%; height: 33.33%; transform: rotate(180deg) scaleX(-1); }
+        .timeline-item .dot {
+            transition: transform 0.3s;
+        }
+        .timeline-item.active .dot {
+            transform: scale(1.5);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-700">
+
+    <header class="text-center py-12 bg-white shadow-md">
+        <h1 class="text-4xl md:text-5xl font-bold text-stone-800">Đỗ Công Minh</h1>
+        <p class="text-lg text-stone-500 mt-2">17 . 07 . 2024</p>
+        <div class="mt-8">
+            <p class="text-xl text-amber-600">Con Số Chủ Đạo</p>
+            <p class="text-8xl font-bold text-amber-500 tracking-tighter">5</p>
+        </div>
+    </header>
+
+    <nav id="navbar" class="sticky top-0 bg-white/80 backdrop-blur-md shadow-sm z-50">
+        <div class="container mx-auto px-4">
+            <ul class="flex justify-center space-x-4 md:space-x-8 py-4 overflow-x-auto whitespace-nowrap">
+                <li><a href="#overview" class="nav-link active px-2 py-2 text-sm md:text-base font-medium">Tổng quan</a></li>
+                <li><a href="#core-numbers" class="nav-link px-2 py-2 text-sm md:text-base font-medium">Các Chỉ số Cốt lõi</a></li>
+                <li><a href="#chart" class="nav-link px-2 py-2 text-sm md:text-base font-medium">Biểu đồ & Năng lượng</a></li>
+                <li><a href="#stages" class="nav-link px-2 py-2 text-sm md:text-base font-medium">Các Giai đoạn Cuộc đời</a></li>
+                <li><a href="#advice" class="nav-link px-2 py-2 text-sm md:text-base font-medium">Lời khuyên</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="overview" class="scroll-mt-24 text-center mb-16">
+            <h2 class="text-3xl font-bold text-teal-800 mb-4">Chào mừng đến với Hành trình của Số 5</h2>
+            <div class="max-w-3xl mx-auto text-lg leading-relaxed text-stone-600 space-y-4">
+                <p>Bé Đỗ Công Minh mang trong mình năng lượng của <strong class="text-amber-600">Con số Chủ đạo 5</strong>, con số của sự tự do, phiêu lưu và đổi mới. Đây là một linh hồn khao khát trải nghiệm, học hỏi từ thế giới xung quanh và không ngừng tìm kiếm những chân trời mới. Cuộc sống của bé sẽ là một bản giao hưởng đầy màu sắc, với những nốt thăng trầm thú vị, những cuộc gặp gỡ bất ngờ và những cơ hội để thể hiện bản thân một cách độc đáo.</p>
+                <p>Điều đặc biệt nhất trong bản đồ thần số học của bé là sự <strong class="text-teal-600">cân bằng đến kinh ngạc</strong>. Bé sở hữu tất cả các con số từ 1 đến 9 trong cả ngày sinh và họ tên. Điều này vô cùng hiếm có, cho thấy bé được vũ trụ ban tặng một bộ công cụ hoàn chỉnh để đối mặt với mọi khía cạnh của cuộc sống - từ tư duy logic, cảm xúc sâu sắc đến hành động quyết đoán. Thử thách của bé không phải là tìm kiếm những gì còn thiếu, mà là học cách sử dụng và hài hòa tất cả những món quà tuyệt vời mình đang có.</p>
+            </div>
+        </section>
+
+        <section id="core-numbers" class="scroll-mt-24 mb-16">
+            <h2 class="text-3xl font-bold text-teal-800 text-center mb-8">Các Chỉ số Cốt lõi</h2>
+            <p class="text-center max-w-2xl mx-auto mb-12 text-stone-600">Đây là những con số nền tảng, định hình nên tính cách, khát vọng và đường đời của bé. Mỗi con số là một mảnh ghép quan trọng tạo nên bức tranh toàn cảnh về Đỗ Công Minh.</p>
+            <div id="core-numbers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="chart" class="scroll-mt-24 mb-16">
+            <h2 class="text-3xl font-bold text-teal-800 text-center mb-8">Biểu đồ Thần số học & Phân bổ Năng lượng</h2>
+            <p class="text-center max-w-2xl mx-auto mb-12 text-stone-600">Biểu đồ này cho thấy sự phân bổ các con số trong ngày sinh và họ tên của bé, hé lộ những điểm mạnh bẩm sinh và những năng lượng tự nhiên mà bé sở hữu.</p>
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center">
+                <div class="flex flex-col items-center">
+                    <h3 class="text-xl font-semibold mb-4 text-stone-700">Biểu đồ Ngày sinh & Họ tên</h3>
+                    <div id="numerology-grid-container" class="numerology-grid rounded-lg shadow-lg bg-white relative">
+                    </div>
+                    <div class="mt-4 text-xs text-stone-500">
+                        <p><span class="font-bold text-blue-600">Màu xanh:</span> Từ Ngày sinh</p>
+                        <p><span class="font-bold text-purple-600">Màu tím:</span> Từ Họ tên</p>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2">
+                    <h3 class="text-xl font-semibold mb-4 text-stone-700 text-center lg:text-left">Những Mũi tên Sức mạnh</h3>
+                    <div class="bg-white p-6 rounded-lg shadow-lg space-y-4">
+                        <div>
+                            <h4 class="font-bold text-teal-700">Mũi tên Thực tế (1-4-7)</h4>
+                            <p class="text-stone-600">Bé có khả năng hiện thực hóa ý tưởng một cách xuất sắc. Sự kết hợp giữa ý chí (1), sự chăm chỉ (4) và sự thông thái qua trải nghiệm (7) giúp bé rất giỏi trong việc xoay sở, giải quyết vấn đề và tạo ra kết quả vật chất. Đây là nền tảng vững chắc cho mọi thành công trong cuộc sống.</p>
+                        </div>
+                        <div class="border-t border-stone-200 pt-4">
+                            <h4 class="font-bold text-teal-700">Mũi tên Cân bằng Cảm xúc (2-5-8)</h4>
+                            <p class="text-stone-600">Bé sở hữu trí tuệ cảm xúc tuyệt vời. Khả năng thấu cảm (2), sự kết nối tự do (5) và óc phán đoán sắc bén (8) tạo nên một tâm hồn nhạy bén nhưng cũng rất vững vàng. Bé dễ dàng thấu hiểu người khác và biết cách kiểm soát cảm xúc của chính mình.</p>
+                        </div>
+                         <div class="border-t border-stone-200 pt-4">
+                            <h4 class="font-bold text-teal-700">Sự Cân bằng Toàn diện</h4>
+                            <p class="text-stone-600">Việc sở hữu tất cả các con số từ 1 đến 9 là một món quà vô giá. Bé có tiềm năng phát triển hài hòa trên mọi phương diện: thể chất, tinh thần, trí tuệ và cảm xúc. Năng lượng của bé trọn vẹn và không bị khuyết thiếu ở bất kỳ khía cạnh nào.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-16">
+                <h3 class="text-xl font-semibold mb-4 text-stone-700 text-center">Biểu đồ Phân bổ Năng lượng các Con số</h3>
+                <div class="bg-white p-4 rounded-lg shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="energyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stages" class="scroll-mt-24 mb-16">
+            <h2 class="text-3xl font-bold text-teal-800 text-center mb-8">Các Giai đoạn & Thử thách Cuộc đời</h2>
+            <p class="text-center max-w-2xl mx-auto mb-12 text-stone-600">Cuộc đời là một hành trình qua nhiều giai đoạn khác nhau, mỗi giai đoạn mang một bài học và một thử thách riêng. Hiểu về các chặng đường này giúp bé chuẩn bị và tận dụng tốt nhất những cơ hội đến với mình.</p>
+            <div class="w-full max-w-4xl mx-auto">
+                <div id="timeline-container" class="relative pl-8 py-4 border-l-2 border-amber-300">
+                </div>
+                <div id="timeline-details" class="mt-8 bg-white p-6 rounded-lg shadow-lg min-h-[150px]">
+                </div>
+            </div>
+        </section>
+        
+        <section id="advice" class="scroll-mt-24">
+            <h2 class="text-3xl font-bold text-teal-800 text-center mb-8">Lời khuyên & Định hướng Phát triển</h2>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-xl space-y-6">
+                <div class="advice-item">
+                    <h4 class="font-bold text-amber-700 text-lg">🚀 Nuôi dưỡng Tinh thần Tự do có Kỷ luật</h4>
+                    <p>Năng lượng số 5 thôi thúc sự khám phá. Hãy tạo điều kiện cho bé được trải nghiệm nhiều thứ, đi nhiều nơi và học hỏi không ngừng. Tuy nhiên, cần dạy bé về sự cam kết và trách nhiệm để sự tự do không trở thành sự vô định. Giúp bé hoàn thành những gì đã bắt đầu là bài học quan trọng.</p>
+                </div>
+                <div class="advice-item">
+                    <h4 class="font-bold text-amber-700 text-lg">🎨 Khuyến khích Khả năng Sáng tạo và Giao tiếp</h4>
+                    <p>Với năng lượng mạnh mẽ của con số 3, bé có tài năng bẩm sinh về ngôn ngữ và nghệ thuật. Hãy cho bé tham gia các lớp học vẽ, nhạc, kịch hoặc đơn giản là thường xuyên trò chuyện và lắng nghe bé. Đây là cách bé thể hiện tâm hồn phong phú của mình ra thế giới.</p>
+                </div>
+                <div class="advice-item">
+                    <h4 class="font-bold text-amber-700 text-lg">💼 Dạy về Giá trị của Lao động và Quản lý</h4>
+                    <p>Con số 8 trong ngày sinh và giai đoạn trưởng thành mang đến tiềm năng về lãnh đạo và thành công vật chất. Ngay từ nhỏ, hãy dạy bé về giá trị của đồng tiền, sự chăm chỉ và cách quản lý các nguồn lực. Điều này sẽ là nền tảng vững chắc cho sự nghiệp sau này.</p>
+                </div>
+                <div class="advice-item">
+                    <h4 class="font-bold text-amber-700 text-lg">❤️ Học cách Cho đi và Yêu thương</h4>
+                    <p>Sự cân bằng hoàn hảo trong biểu đồ là một món quà, và món quà lớn nhất là khi được chia sẻ. Dạy bé về lòng trắc ẩn, sự giúp đỡ người khác và tinh thần cộng đồng (năng lượng của số 9 và số 6) sẽ giúp bé tìm thấy ý nghĩa sâu sắc nhất trong cuộc sống, vượt qua cả những thành công cá nhân.</p>
+                </div>
+                <div class="advice-item">
+                    <h4 class="font-bold text-amber-700 text-lg">🧘‍♂️ Tìm kiếm Sự hài hòa Nội tâm</h4>
+                    <p>Thử thách lớn nhất của bé không phải là thiếu sót, mà là việc dung hòa quá nhiều năng lượng mạnh mẽ. Thiền định, yoga, viết nhật ký hoặc dành thời gian trong thiên nhiên sẽ giúp bé kết nối với bản thân, lắng nghe tiếng nói bên trong và sử dụng sức mạnh của mình một cách khôn ngoan và hài hòa nhất.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-8 mt-16 border-t border-stone-200">
+        <p class="text-stone-500">Báo cáo được tạo cho Đỗ Công Minh | Chúc bé một hành trình rực rỡ và ý nghĩa.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const numerologyData = {
+                name: "Đỗ Công Minh",
+                dob: "17/07/2024",
+                lifePath: 5,
+                coreNumbers: [
+                    {
+                        number: 3,
+                        name: "Chỉ số Vận mệnh",
+                        description: "Con số này nói lên sứ mệnh và con đường mà bé sẽ đi trong cuộc đời. Với số 3, sứ mệnh của bé là lan tỏa niềm vui, sự lạc quan và nguồn cảm hứng sáng tạo. Bé có khả năng giao tiếp và biểu đạt xuất sắc, có thể trở thành một người nghệ sĩ, nhà văn, hoặc người truyền cảm hứng."
+                    },
+                    {
+                        number: 3,
+                        name: "Chỉ số Linh hồn",
+                        description: "Đây là khao khát sâu thẳm nhất bên trong tâm hồn bé. Linh hồn số 3 khao khát được thể hiện bản thân, được sáng tạo và được kết nối với mọi người một cách vui vẻ. Bé thực sự hạnh phúc khi được cười, được nói và được mang lại tiếng cười cho người khác."
+                    },
+                    {
+                        number: 9,
+                        name: "Chỉ số Nhân cách",
+                        description: "Đây là cách thế giới bên ngoài nhìn nhận bé. Mọi người sẽ thấy ở Minh một người có lòng nhân ái, sự bao dung và một trí tuệ sâu sắc. Bé toát lên vẻ chững chạc, đáng tin cậy và có một trái tim ấm áp, luôn sẵn sàng giúp đỡ người khác."
+                    },
+                    {
+                        number: 8,
+                        name: "Chỉ số Ngày sinh",
+                        description: "Con số này đại diện cho tài năng đặc biệt mà bé mang đến cuộc đời. Số 8 ban cho bé khả năng lãnh đạo, tổ chức và một ý chí mạnh mẽ để đạt được thành công. Bé có đầu óc kinh doanh và khả năng nhìn ra các cơ hội lớn."
+                    },
+                    {
+                        number: 6,
+                        name: "Chỉ số Thái độ",
+                        description: "Đây là thái độ tự nhiên của bé khi đối mặt với cuộc sống. Với số 6, bé luôn có xu hướng quan tâm, chăm sóc và tìm kiếm sự hài hòa. Bé là người có trách nhiệm, yêu cái đẹp và luôn muốn tạo ra một môi trường yêu thương, ổn định xung quanh mình."
+                    },
+                    {
+                        number: 8,
+                        name: "Chỉ số Trưởng thành",
+                        description: "Đây là năng lượng sẽ trở nên nổi bật hơn ở giai đoạn sau của cuộc đời (từ 40-50 tuổi trở đi). Số 8 cho thấy về sau, bé sẽ đạt được những thành tựu lớn lao về sự nghiệp, có sức ảnh hưởng và quyền lực. Đây là giai đoạn bé gặt hái thành quả từ những nỗ lực của mình."
+                    }
+                ],
+                chartNumbers: [
+                    { number: 1, source: 'dob' }, { number: 7, source: 'dob' }, { number: 7, source: 'dob' }, { number: 2, source: 'dob' }, { number: 4, source: 'dob' },
+                    { number: 4, source: 'name' }, { number: 6, source: 'name' }, { number: 3, source: 'name' }, { number: 6, source: 'name' }, { number: 5, source: 'name' }, { number: 7, source: 'name' },
+                    { number: 4, source: 'name' }, { number: 9, source: 'name' }, { number: 5, source: 'name' }, { number: 8, source: 'name' }
+                ],
+                timeline: [
+                    {
+                        period: "Giai đoạn 1: Xây dựng Nền tảng",
+                        age: "0 - 31 tuổi",
+                        pinnacle: 6,
+                        challenge: 1,
+                        description: "Đây là giai đoạn hình thành nhân cách quan trọng nhất. Năng lượng của Đỉnh cao số 6 tập trung vào gia đình, trách nhiệm và tình yêu thương. Bé sẽ học được những bài học quan trọng về sự chăm sóc, sự hài hòa và sáng tạo. Thử thách số 1 yêu cầu bé phải học cách khẳng định bản thân, trở nên độc lập và tự tin vào chính mình."
+                    },
+                    {
+                        period: "Giai đoạn 2: Chiêm nghiệm & Phát triển Nội tâm",
+                        age: "31 - 40 tuổi",
+                        pinnacle: 7,
+                        challenge: 0,
+                        description: "Giai đoạn này là một cuộc hành trình vào bên trong. Đỉnh cao số 7 khuyến khích sự học hỏi sâu, chiêm nghiệm và tìm kiếm chân lý. Bé sẽ phát triển mạnh mẽ về mặt trí tuệ và tâm linh. Thử thách số 0 là một thử thách đặc biệt, đòi hỏi bé phải tin vào trực giác của mình và có đức tin vào cuộc sống, lựa chọn giữa vật chất và tinh thần."
+                    },
+                    {
+                        period: "Giai đoạn 3: Làm việc Chăm chỉ & Củng cố",
+                        age: "40 - 49 tuổi",
+                        pinnacle: 4,
+                        challenge: 1,
+                        description: "Sau giai đoạn chiêm nghiệm, đây là lúc để áp dụng kiến thức vào thực tế. Đỉnh cao số 4 yêu cầu sự chăm chỉ, kiên nhẫn và tổ chức để xây dựng một sự nghiệp và cuộc sống vững chắc. Đây là thời kỳ lao động miệt mài để tạo ra thành quả. Thử thách số 1 quay trở lại, nhắc nhở bé phải tiếp tục tin tưởng vào năng lực cá nhân và không ngại đứng ra lãnh đạo."
+                    },
+                    {
+                        period: "Giai đoạn 4: Thu hoạch & Cho đi",
+                        age: "49 tuổi trở đi",
+                        pinnacle: 6,
+                        challenge: 1,
+                        description: "Đây là giai đoạn của sự viên mãn. Đỉnh cao số 6 quay lại ở một tầm cao mới, tập trung vào việc cống hiến cho cộng đồng, chăm sóc gia đình lớn và tận hưởng thành quả. Bé sẽ trở thành một người thầy, một người truyền cảm hứng, chia sẻ trí tuệ và tình yêu thương của mình. Thử thách cuối cùng vẫn là số 1, khẳng định rằng ngay cả khi ở đỉnh cao, bé vẫn cần giữ vững bản sắc và lòng tự trọng của riêng mình."
+                    }
+                ]
+            };
+
+            const coreNumbersGrid = document.getElementById('core-numbers-grid');
+            numerologyData.coreNumbers.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-lg shadow-lg cursor-pointer';
+                card.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0 w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
+                            <span class="text-4xl font-bold">${item.number}</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-stone-800">${item.name}</h3>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-stone-600 description hidden">${item.description}</p>
+                `;
+                card.addEventListener('click', () => {
+                    const desc = card.querySelector('.description');
+                    desc.classList.toggle('hidden');
+                    card.classList.toggle('row-span-2');
+                });
+                coreNumbersGrid.appendChild(card);
+            });
+            
+            const gridContainer = document.getElementById('numerology-grid-container');
+            const gridPositions = {
+                1: '2/1', 2: '1/2', 3: '0/3',
+                4: '2/2', 5: '1/3', 6: '0/4',
+                7: '2/3', 8: '1/4', 9: '0/5' 
+            };
+            const gridTemplate = [
+                [3,6,9],
+                [2,5,8],
+                [1,4,7]
+            ];
+            
+            const numberCounts = {};
+            gridTemplate.flat().forEach(num => numberCounts[num] = []);
+
+            numerologyData.chartNumbers.forEach(item => {
+                if (numberCounts[item.number]) {
+                    numberCounts[item.number].push(item.source);
+                }
+            });
+            
+            gridTemplate.forEach(row => {
+                row.forEach(num => {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    const sources = numberCounts[num];
+                    if (sources.length > 0) {
+                        const content = sources.map(source => {
+                             const color = source === 'dob' ? 'text-blue-600' : 'text-purple-600';
+                             return `<span class="font-bold ${color}">${num}</span>`;
+                        }).join(',');
+                        cell.innerHTML = content;
+                    }
+                    gridContainer.appendChild(cell);
+                })
+            });
+
+            const energyCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0};
+            numerologyData.chartNumbers.forEach(item => {
+                energyCounts[item.number]++;
+            });
+
+            const ctx = document.getElementById('energyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(energyCounts),
+                    datasets: [{
+                        label: 'Số lần xuất hiện',
+                        data: Object.values(energyCounts),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)',
+                            'rgba(201, 203, 207, 0.2)', 'rgba(235, 64, 52, 0.2)', 'rgba(52, 235, 134, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)',
+                            'rgba(201, 203, 207, 1)', 'rgba(235, 64, 52, 1)', 'rgba(52, 235, 134, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            const timelineContainer = document.getElementById('timeline-container');
+            const timelineDetails = document.getElementById('timeline-details');
+
+            numerologyData.timeline.forEach((item, index) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item relative mb-8 pl-8 cursor-pointer';
+                timelineItem.innerHTML = `
+                    <div class="dot absolute w-4 h-4 bg-amber-400 rounded-full mt-1.5 -left-[9px] border-2 border-white"></div>
+                    <div class="content">
+                        <p class="text-sm text-stone-500">${item.age}</p>
+                        <h4 class="font-bold text-lg text-teal-700">${item.period}</h4>
+                    </div>
+                `;
+                timelineItem.addEventListener('click', () => {
+                    updateTimelineDetails(item);
+                    document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('active'));
+                    timelineItem.classList.add('active');
+                });
+                timelineContainer.appendChild(timelineItem);
+            });
+
+            function updateTimelineDetails(item) {
+                timelineDetails.innerHTML = `
+                    <h3 class="text-2xl font-bold text-teal-800 mb-2">Đỉnh cao ${item.pinnacle}: ${item.period}</h3>
+                    <p class="text-sm font-medium text-stone-500 mb-4">${item.age} | Thử thách: ${item.challenge}</p>
+                    <p class="text-stone-600 leading-relaxed">${item.description}</p>
+                `;
+            }
+
+            updateTimelineDetails(numerologyData.timeline[0]);
+            document.querySelector('.timeline-item').classList.add('active');
+            
+            const navbar = document.getElementById('navbar');
+            const navLinks = navbar.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
